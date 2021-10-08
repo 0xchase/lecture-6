@@ -360,6 +360,14 @@ fn main() {
 }
 ```
 
+Though will rust may let you overload some operators by implementing traits, it won't let you overload functions in traits. To show an example of this, we can use
+
+*open add.rs*
+
+Rust won't let you do this for two reasons:
+1) Because we'll now have conflicting implementations of the Add trait
+2) Only traits defined in the current cate can be implemented for an arbitrary type
+
 ### Implement iterator for your own trait
 
 The `Iterator` trait is used to implement iterators over collections such as arrays.
@@ -368,117 +376,13 @@ The trait requires only a method to be defined for the `next` element, which may
 
 As a point of convenience `for` common situations, the for construct turns some collections into iterators using the `.into_iter()` method.
 
-```rust
-struct Fibonacci {
-    curr: u32,
-    next: u32,
-}
-
-impl Iterator for Fibonacci {
-    // We can refer to this type using Self::Item
-    type Item = u32;
-    
-    // Here, we define the sequence using `.curr` and `.next`.
-    // The return type is `Option<T>`:
-    //     * When the `Iterator` is finished, `None` is returned.
-    //     * Otherwise, the next value is wrapped in `Some` and returned.
-    // We use Self::Item in the return type, so we can change
-    // the type without having to update the function signatures.
-    fn next(&mut self) -> Option<Self::Item> {
-        let new_next = self.curr + self.next;
-
-        self.curr = self.next;
-        self.next = new_next;
-
-        // Since there's no endpoint to a Fibonacci sequence, the `Iterator` 
-        // will never return `None`, and `Some` is always returned.
-        Some(self.curr)
-    }
-}
-
-// Returns a Fibonacci sequence generator
-fn fibonacci() -> Fibonacci {
-    Fibonacci { curr: 0, next: 1 }
-}
-
-fn main() {
-    // `0..3` is an `Iterator` that generates: 0, 1, and 2.
-    let mut sequence = 0..3;
-
-    println!("Four consecutive `next` calls on 0..3");
-    println!("> {:?}", sequence.next());
-    println!("> {:?}", sequence.next());
-    println!("> {:?}", sequence.next());
-    println!("> {:?}", sequence.next());
-
-    // `for` works through an `Iterator` until it returns `None`.
-    // Each `Some` value is unwrapped and bound to a variable (here, `i`).
-    println!("Iterate through 0..3 using `for`");
-    for i in 0..3 {
-        println!("> {}", i);
-    }
-
-    // The `take(n)` method reduces an `Iterator` to its first `n` terms.
-    println!("The first four terms of the Fibonacci sequence are: ");
-    for i in fibonacci().take(4) {
-        println!("> {}", i);
-    }
-
-    // The `skip(n)` method shortens an `Iterator` by dropping its first `n` terms.
-    println!("The next four terms of the Fibonacci sequence are: ");
-    for i in fibonacci().skip(4).take(4) {
-        println!("> {}", i);
-    }
-
-    let array = [1u32, 3, 3, 7];
-
-    // The `iter` method produces an `Iterator` over an array/slice.
-    println!("Iterate the following array {:?}", &array);
-    for i in array.iter() {
-        println!("> {}", i);
-    }
-}
-
-```
+*open iterator.rs*
 
 ### Supertraits
 
 Rust doesn't have "inheritance", but you can define a trait as being a superset of another trait. For example:
 
-```rust
-trait Person {
-    fn name(&self) -> String;
-}
-
-// Person is a supertrait of Student.
-// Implementing Student requires you to also impl Person.
-trait Student: Person {
-    fn university(&self) -> String;
-}
-
-trait Programmer {
-    fn fav_language(&self) -> String;
-}
-
-// CompSciStudent (computer science student) is a subtrait of both Programmer 
-// and Student. Implementing CompSciStudent requires you to impl both supertraits.
-trait CompSciStudent: Programmer + Student {
-    fn git_username(&self) -> String;
-}
-
-fn comp_sci_student_greeting(student: &dyn CompSciStudent) -> String {
-    format!(
-        "My name is {} and I attend {}. My favorite language is {}. My Git username is {}",
-        student.name(),
-        student.university(),
-        student.fav_language(),
-        student.git_username()
-    )
-}
-
-fn main() {}
-
-```
+*open super.rs*
 
 ### Disambiguating overlapping traits
 
@@ -495,6 +399,7 @@ To many people, polymorphism is synonymous with inheritance. But it’s actually
 Rust instead uses generics to abstract over different possible types and trait bounds to impose constraints on what those types must provide. This is sometimes called *bounded parametric polymorphism*.
 
 ## Rust is sort of a Object-Oriented Language
+
 Arguably, OOP languages share certain common characteristics, namely objects, encapsulation, and inheritance. Let’s look at what each of those characteristics means and whether Rust supports it.
 
 ### 1. Objects Contain Data and Behavior
@@ -503,11 +408,9 @@ Arguably, OOP languages share certain common characteristics, namely objects, en
 
 Using this definition, Rust is object oriented: structs and enums have data, and `impl` blocks provide methods on structs and enums. 
 
-
 ### 2. Encapsulation that Hides Implementation Details
 
 The option to use `pub` or not for different parts of code enables encapsulation of implementation details.
-
 
 ### 3. Inheritance as a Type System and as Code Sharing
 
@@ -518,9 +421,10 @@ In Rust, there is no way to define a struct that inherits the parent struct’s 
 The other reason to use inheritance *relates to the type system: to enable a child type to be used in the same places as the parent type*. This is also called **polymorphism**, which means that you can substitute multiple objects for each other at **runtime** if they share certain characteristics. the trait object `Box<dyn Trait>` is the secret. When talking about generics, we said the compiler will figure out what type a generics is at compile time.
 
 ## Defining a Trait for common behavior
+
 **A trait object `Box<dyn Trait>` points to both an instance of a type implementing our specified trait as well as a table used to look up trait methods on that type at runtime.** 
 
-The Rust compiler restricts that all the values in a vector must have the same type. Even if we define a generic type, the generic type can be substituted with one contrete type at a time
+The Rust compiler restricts that all the values in a vector must have the same type. Even if we define a generic type, the generic type can be substituted with one concrete type at a time
 
 ```rust
 // generic
@@ -560,7 +464,7 @@ impl Screen {
 }
 ```
 
-Now, what the magic thing `Screen` can do is take different concrete type in its components field. When we iterate over the vector, the Rust compiler will figure out what contrete type a value is, and call the methods of that contrete type using the pointer to the methods inside the trait object.
+Now, what the magic thing `Screen` can do is take different concrete type in its components field. When we iterate over the vector, the Rust compiler will figure out what contrete type a value is, and call the methods of that concrete type using the pointer to the methods inside the trait object.
 
 ```rust
 pub struct Button {
@@ -615,7 +519,7 @@ fn main() {
 
 ## Trait Objects Perform Dynamic Dispatch
 
-We have talked abou that when using generics, the Rust compiler will figure out what the concrete type a generic type is for each usage, and then implement everything for that concrete type.  The code that results from monomorphization is doing *static dispatch*, which is when the compiler knows what method you’re calling at compile time.
+We have talked about that when using generics, the Rust compiler will figure out what the concrete type a generic type is for each usage, and then implement everything for that concrete type.  The code that results from monomorphization is doing *static dispatch*, which is when the compiler knows what method you’re calling at compile time.
 
 However when we use trait object, the compiler cannot tell at compile time which method you are calling. Instead, at runtime, Rust uses the pointers inside the trait object to know which method to call. So, the compiler emits code that at runtime will figure out which method to call. This is called *dynamic dispatch*.
 
