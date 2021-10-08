@@ -45,25 +45,7 @@ enum Result<T, E> {
 
 If we want the fields in our custom struct to be generic:
 
-```rust
-struct Point<T, U> {
-    x: T,
-    y: U,
-}
-
-impl<T,U> Point<T,U> {
-    fn x(&self) -> &T {
-        &self.x
-    }
-}
-
-
-fn main() {
-    let both_integer = Point { x: 5, y: 10 };
-    let both_float = Point { x: 1.0, y: 4.0 };
-    let integer_and_float = Point { x: 5, y: 4.0 };
-}
-```
+*open generics0.rs*
 
 Note that we have to declare `<T,U>` just after `impl` so we can use it to specify that we’re implementing methods on the type `Point<T,U>`. By doing so, Rust can identify that the type in the angle brackets in `Point` is a generic type rather than a concrete type.
 
@@ -82,55 +64,17 @@ This code means the type `Point<f32,f32>` will have a method named `distance_fro
 
 ### Generic in function definitions
 
+Let's see a another example:
+
+*open genrics02.rs*
+
 In this example, we have a unit struct `A`, a concrete struct `S` and a generic type struct `SGen`. 
 - Function `reg_fn(_s: S) {}` is not a generic function as there is no `<>`. 
 - Function `gen_spec_t(_s: SGen<A>) {}` is also not a generic function, because `SGen<A>` is a concrete type.
 - Function `gen_spec_i32(_s: SGen<i32>) {}` is not generic.
 - Function `generic<T>(_s: SGen<T>) {}` is a generic function over `T`. 
 
-
-Let's see a concrate example:
-
-```rust
-struct A;          // Concrete type `A`.
-struct S(A);       // Concrete type `S`.
-struct SGen<T>(T); // Generic type `SGen`.
-
-// The following functions all take ownership of the variable passed into
-// them and immediately go out of scope, freeing the variable.
-
-// Define a function `reg_fn` that takes an argument `_s` of type `S`.
-// This has no `<T>` so this is not a generic function.
-fn reg_fn(_s: S) {}
-
-// Define a function `gen_spec_t` that takes an argument `_s` of type `SGen<T>`.
-// It has been explicitly given the type parameter `A`, but because `A` has not 
-// been specified as a generic type parameter for `gen_spec_t`, it is not generic.
-fn gen_spec_t(_s: SGen<A>) {}
-
-// Define a function `gen_spec_i32` that takes an argument `_s` of type `SGen<i32>`.
-// It has been explicitly given the type parameter `i32`, which is a specific type.
-// Because `i32` is not a generic type, this function is also not generic.
-fn gen_spec_i32(_s: SGen<i32>) {}
-
-// Define a function `generic` that takes an argument `_s` of type `SGen<T>`.
-// Because `SGen<T>` is preceded by `<T>`, this function is generic over `T`.
-fn generic<T>(_s: SGen<T>) {}
-
-fn main() {
-    // Using the non-generic functions
-    reg_fn(S(A));          // Concrete type.
-    gen_spec_t(SGen(A));   // Implicitly specified type parameter `A`.
-    gen_spec_i32(SGen(6)); // Implicitly specified type parameter `i32`.
-
-    // Explicitly specified type parameter `char` to `generic()`.
-    generic::<char>(SGen('a'));
-
-    // Implicitly specified type parameter `char` to `generic()`.
-    generic(SGen('c'));
-}
-
-```
+Talk through example. 
 
 ### Performance of Code Using Generics
 
@@ -205,7 +149,6 @@ If we want to define the desired behavior of a struct or any type of a trait, we
 If you want to call the `Summary` trait from other modules, you need to use `use` keyword as you do for your struct or module. You will also need to specify that `Summary` is a public trait before calling from other modules by saying `pub trait Summary {}`.
 
 You have the choice to provide a default implementation for the desired behavior, like what we did for the `say_hello()` function. Suppose we also give `summarize()` a default implementation, then you just need to say `impl Summary for NewsArticle {}` if you want `NewsArticle` to use the default implementation. Of course you can replace the default implementation using your custom implementation.
-
 
 ## Traits as Parameters
 
