@@ -312,8 +312,8 @@ Though will rust may let you overload some operators by implementing traits, it 
 *open add.rs*
 
 Rust won't let you do this for two reasons:
-1) Because we'll now have conflicting implementations of the Add trait
-2) Only traits defined in the current cate can be implemented for an arbitrary type
+1) Because we'll now have conflicting implementations of the Add trait. Unlike in some languages, Rust will not prefer the implementation in the more local scope. 
+2) Only traits defined in the current crate can be implemented for an arbitrary type
 
 ### Implement iterator for your own trait
 
