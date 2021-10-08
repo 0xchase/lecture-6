@@ -167,48 +167,13 @@ fn main() {
 
 ### Trait can help to define the type of generic type
 
-Imagine we are working on many many different type of numbers, and we want to implement a `the_large_one()` function that can return the largest value of two input values.
-
-Without generic, we need to define this function for every single data type:
-
-```rust
-fn the_large_one(x: i8, y:i8) {if x > y {x} else {y}};
-fn the_large_one(x: i16, y:i16) {if x > y {x} else {y}};
-// ...
-```
-
-As a smart coder, we cannot let it happen. So, we define a generic type `T`, and tell rust to do the rest for us.
-
-```rust
-fn the_large_one<T>(x: T, y: T) -> T {if x > y {x} else {y}};
-
-```
-
-However, rust will complain because not every data type can be compared. 
-
-```
-error[E0369]: binary operation `>` cannot be applied to type `T`
- --> src/main.rs:1:44
-  |
-1 | fn the_large_one<T>(x: T, y: T) -> T {if x > y {x} else {y}}
-  |                                          - ^ - T
-  |                                          |
-  |                                          T
-  |
-help: consider restricting type parameter `T`
-  |
-1 | fn the_large_one<T: std::cmp::PartialOrd>(x: T, y: T) -> T {if x > y {x} else {y}}
-  |                   ^^^^^^^^^^^^^^^^^^^^^^
-
-For more information about this error, try `rustc --explain E0369`.
-```
-
-How to fix this error? We need trait to tell rust what is our generic type `T`!
+*generics example 1*
 
 # Trait
 A *trait* tells the Rust compiler about functionality a particular **type** has and can share with other types. 
 - We can use traits to define shared behavior in an abstract way. 
 - We can use trait bounds to specify that a generic type can be any type that has certain behavior.
+- Can be used similar to interfaces in Java, templates in C++, etc
 
 ## Defining a trait
 
@@ -235,38 +200,7 @@ We don't give the function body to `summarize`, because we want the `struct`s th
 
 If we want to define the desired behavior of a struct or any type of a trait, we need to implement the trait for the type.
 
-```rust
-pub trait Summary {
-    fn summarize(&self) -> String;
-}
-
-pub struct NewsArticle {
-    pub headline: String,
-    pub location: String,
-    pub author: String,
-    pub content: String,
-}
-
-impl Summary for NewsArticle {
-    fn summarize(&self) -> String {
-        format!("{}, by {} ({})", self.headline, self.author, self.location)
-    }
-}
-
-pub struct Tweet {
-    pub username: String,
-    pub content: String,
-    pub reply: bool,
-    pub retweet: bool,
-}
-
-impl Summary for Tweet {
-    fn summarize(&self) -> String {
-        format!("{}: {}", self.username, self.content)
-    }
-}
-
-```
+*trait example 1*
 
 If you want to call the `Summary` trait from other modules, you need to use `use` keyword as you do for your struct or module. You will also need to specify that `Summary` is a public trait before calling from other modules by saying `pub trait Summary {}`.
 
@@ -277,11 +211,7 @@ You have the choice to provide a default implementation for the desired behavior
 
 We can use traits in function definition as the parameter type to tell rust this function can take multiple type. For example, if we want to write a function that takes a struct that implement the `Summary` trait as the input, we can say
 
-```rust
-pub fn notify(item: &impl Summary) {
-    println!("Breaking news! {}", item.summarize());
-}
-```
+*Trait example 2*
 
 ### Trait Bound Syntax
 
