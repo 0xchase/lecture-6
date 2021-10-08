@@ -232,23 +232,13 @@ pub fn notify<T: Summary + Display>(item1: &T, item2: &T) {}
 
 ```
 
-We can also specify more than one trait bound using the `+` syntax.
-
-
+We can also specify more than one trait bound using the `+` syntax, as shown above. 
 
 ### Clearer Trait Bounds with where Clauses
 
 If you have really fancy trait bounds for your types, you function signature will be very very long. To make our life easier, rust defines a **`where` clause** in which you can put all your trait bounds inside.
 
-
-```rust
-fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {}
-
-fn some_function<T, U>(t: &T, u: &U) -> i32
-    where T: Display + Clone,
-          U: Clone + Debug
-{}
-```
+*trait example 3*
 
 If you want to use `impl Trait` syntax in the return position to return a value of some type that implements a trait, the function must have a fixed return type. For example, you cannot do `if true {NewsArticle} else {Tweet}`, even though both of them implemented `Summary`. However, we can do some tricks to achieve this. We will talk about how to achieve this with **trait object**.
 
@@ -259,51 +249,15 @@ The Rust compiler *needs to know how much space every function's return type req
 
 Here we use `Box<dyn Trait>`, a trait object as the return type to solve this problem. 
 
-```rust
-struct Sheep {}
-struct Cow {}
-
-trait Animal {
-    // Instance method signature
-    fn noise(&self) -> &'static str;
-}
-
-// Implement the `Animal` trait for `Sheep`.
-impl Animal for Sheep {
-    fn noise(&self) -> &'static str {
-        "baaaaah!"
-    }
-}
-
-// Implement the `Animal` trait for `Cow`.
-impl Animal for Cow {
-    fn noise(&self) -> &'static str {
-        "moooooo!"
-    }
-}
-
-// Returns some struct that implements Animal, but we don't know which one at compile time.
-fn random_animal(random_number: f64) -> Box<dyn Animal> {
-    if random_number < 0.5 {
-        Box::new(Sheep {})
-    } else {
-        Box::new(Cow {})
-    }
-}
-
-fn main() {
-    let random_number = 0.234;
-    let animal = random_animal(random_number);
-    println!("You've randomly chosen an animal, and it says {}", animal.noise());
-}
-```
+*dyn example 1*
 
 ### Fixing the largest Function with Trait Bounds
 
-```rust
-fn the_large_one<T: PartialOrd>(x: T, y: T) -> T {if x > y {x} else {y}};
+Now that we've learned about traits, lets go back and fix the largest_one function we encountered at the beginning. 
 
-```
+*generics example 2*
+
+Hint: We must require type T to be bound to PartialOrd. 
 
 ## Finer controls!
 
@@ -362,54 +316,7 @@ The following is a list of derivable traits:
 * Default, to create an empty instance of a data type.
 * Debug, to format a value using the `{:?}` formatter.
 
-```rust
-// `Centimeters`, a tuple struct that can be compared
-#[derive(PartialEq, PartialOrd)]
-struct Centimeters(f64);
-
-// `Inches`, a tuple struct that can be printed
-#[derive(Debug)]
-struct Inches(i32);
-
-impl Inches {
-    fn to_centimeters(&self) -> Centimeters {
-        let &Inches(inches) = self;
-
-        Centimeters(inches as f64 * 2.54)
-    }
-}
-
-// `Seconds`, a tuple struct with no additional attributes
-struct Seconds(i32);
-
-fn main() {
-    let _one_second = Seconds(1);
-
-    // Error: `Seconds` can't be printed; it doesn't implement the `Debug` trait
-    //println!("One second looks like: {:?}", _one_second);
-    // TODO ^ Try uncommenting this line
-
-    // Error: `Seconds` can't be compared; it doesn't implement the `PartialEq` trait
-    //let _this_is_true = (_one_second == _one_second);
-    // TODO ^ Try uncommenting this line
-
-    let foot = Inches(12);
-
-    println!("One foot equals {:?}", foot);
-
-    let meter = Centimeters(100.0);
-
-    let cmp =
-        if foot.to_centimeters() < meter {
-            "smaller"
-        } else {
-            "bigger"
-        };
-
-    println!("One foot is {} than one meter.", cmp);
-}
-```
-
+*derive example 1*
 
 ## Operator Overloading
 
